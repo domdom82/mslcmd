@@ -28,6 +28,8 @@
     var targets = [];
     var targetGroup;
     var explosionGroup;
+    var score = 0;
+    var scoreText;
     var scene;
 
     function preload () {
@@ -60,7 +62,7 @@
         explosionGroup = scene.physics.add.group([]);
 
         this.time.addEvent({ delay: 2000, callback: launchEnemyMissile, loop: true, callbackScope: this });
-
+        scoreText = this.add.text(650, 16, score, { font: '32px Courier', fill: '#00ff00' });
     }
 
     function update(time, delta) {
@@ -182,6 +184,7 @@
         }
         scene.physics.world.removeCollider(collTarget);
         explode(msl.x, msl.y, 80, 0xcccc00);
+        checkGameOver();
       });
 
       var collExplosion = scene.physics.add.overlap(missile, explosionGroup, function (msl, exp) {
@@ -189,7 +192,27 @@
         msl.destroy();
         scene.physics.world.removeCollider(collExplosion);
         explode(msl.x, msl.y, 50, 0x00ccff);
+        addScore(100);
       });
+
+    }
+
+    function addScore(s) {
+      score += s;
+      scoreText.setText(score);
+    }
+
+    function checkGameOver() {
+      var gameOver = true;
+      for (var t in targets) {
+        if (targets[t].visible) {
+          gameOver = false;
+        }
+      }
+
+      if (gameOver) {
+        var goText = scene.add.text(250, 200, "Game Over", { font: '64px Courier', fill: '#00ff00' });
+      }
 
     }
 
