@@ -23,6 +23,7 @@
 
     var game = new Phaser.Game(config);
     var ground;
+    var enemyMissiles = [];
     var towers = [];
     var cities = [];
     var targets = [];
@@ -30,6 +31,7 @@
     var explosionGroup;
     var score = 0;
     var scoreText;
+    var gameOver = false;
     var scene;
 
     function preload () {
@@ -63,6 +65,8 @@
 
         this.time.addEvent({ delay: 2000, callback: launchEnemyMissile, loop: true, callbackScope: this });
         scoreText = this.add.text(650, 16, score, { font: '32px Courier', fill: '#00ff00' });
+        gameOverText = scene.add.text(250, 200, "Game Over", { font: '64px Courier', fill: '#00ff00' });
+        gameOverText.setVisible(false);
     }
 
     function update(time, delta) {
@@ -91,6 +95,10 @@
     }
 
     function launchMissile(pointer) {
+      if (gameOver) {
+        resetGame();
+        return;
+      }
       var launchPos = selectLaunchPos(pointer);
       if (launchPos == null) {
         return;
@@ -172,6 +180,7 @@
       var startX = getRndInteger(0, 800)
 
       var missile = scene.add.rectangle(startX, startY, 5, 5, 0xff0000)
+      enemyMissiles.push(missile);
       scene.physics.add.existing(missile);
       scene.physics.moveToObject(missile, target);
 
@@ -192,7 +201,9 @@
         msl.destroy();
         scene.physics.world.removeCollider(collExplosion);
         explode(msl.x, msl.y, 50, 0x00ccff);
-        addScore(100);
+        if (!gameOver) {
+          addScore(100);
+        }
       });
 
     }
@@ -203,17 +214,26 @@
     }
 
     function checkGameOver() {
-      var gameOver = true;
+      var finished = true;
       for (var t in targets) {
         if (targets[t].visible) {
-          gameOver = false;
+          finished = false;
         }
       }
-
+      gameOver = finished;
       if (gameOver) {
-        var goText = scene.add.text(250, 200, "Game Over", { font: '64px Courier', fill: '#00ff00' });
+        gameOverText.setVisible(true);
       }
+    }
 
+    function resetGame() {
+      gameOver = false;
+      addScore(-score);
+      gameOverText.setVisible(false);
+      for (var t in targets) {
+        targets[t].setVisible(true);
+        targets[t].body.setEnable(true);
+      }
     }
 
     </script>
